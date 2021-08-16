@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">CenterPoint</string>
+
+    <!-- Main -->
+    <string name="address_search">주소찾기</string>
+    <string name="map_search">지도찾기</string>
+    <string name="research">수정하기</string>
+    <string name="delete">삭제하기</string>
+    <string name="null_data">설정된 지역정보가 없습니다.</string>
+    <string name="find_point">찾기</string>
+</resources>
