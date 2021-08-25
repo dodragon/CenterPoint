@@ -8,4 +8,7 @@
     <string name="delete">삭제하기</string>
     <string name="null_data">설정된 지역정보가 없습니다.</string>
     <string name="find_point">찾기</string>
+
+    <!-- Key -->
+    <string name="kakao_rest_api_key">KakaoAK bfb672176c47128ff62153b5917eb714</string>
 </resources>

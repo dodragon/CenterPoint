@@ -13,6 +13,7 @@ import com.dod.centerpoint.MainActivity;
 import com.dod.centerpoint.R;
 import com.dod.centerpoint.data.KakaoAddressDoc;
 import com.dod.centerpoint.data.KakaoRoadAddress;
+import com.dod.centerpoint.data.LocationData;
 
 public class AddressSearchHolder extends RecyclerView.ViewHolder {
 
@@ -26,15 +27,23 @@ public class AddressSearchHolder extends RecyclerView.ViewHolder {
 
     public void setData(KakaoAddressDoc data){
         ((TextView)itemView.findViewById(R.id.address)).setText(data.getAddressName());
-        itemView.setOnClickListener(new View.OnClickListener() {
+        itemView.findViewById(R.id.choice).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, MainActivity.class);
-                intent.putExtra("addressData", data.getRoadAddress());
+                intent.putExtra("addressData", setLocationData(data.getRoadAddress()));
                 intent.putExtra("type", "address");
                 ((Activity)context).setResult(Activity.RESULT_OK, intent);
                 ((Activity)context).finish();
             }
         });
+    }
+
+    private LocationData setLocationData(KakaoRoadAddress data){
+        LocationData locationData = new LocationData();
+        locationData.setMainAddress(data.getAddressName());
+        locationData.setLongitude(Double.parseDouble(data.getX()));
+        locationData.setLatitude(Double.parseDouble(data.getY()));
+        return locationData;
     }
 }

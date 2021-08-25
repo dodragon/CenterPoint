@@ -26,7 +26,6 @@ public class MainHolder extends RecyclerView.ViewHolder implements View.OnClickL
     public void setData(LocationData data, int position){
         this.position = position;
         ((TextView)itemView.findViewById(R.id.main_address)).setText(data.getMainAddress());
-        ((TextView)itemView.findViewById(R.id.detail_address)).setText(data.getDetailAddress());
         itemView.findViewById(R.id.delete).setOnClickListener(this);
     }
 

@@ -15,8 +15,6 @@ import android.widget.Toast;
 import com.dod.centerpoint.adapter.AddressSearchAdapter;
 import com.dod.centerpoint.data.KaKaoAddressData;
 import com.dod.centerpoint.http_interface.KakaoInterface;
-import com.google.gson.Gson;
-import com.google.gson.internal.GsonBuildConfig;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -24,15 +22,18 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+@SuppressWarnings("NullableProblems")
 public class AddressSearch extends AppCompatActivity {
 
     //TODO: 주소검색 더보기 구현 필요
 
     private KakaoInterface kakaoAddressService;
-    private int page;
-    private final int size = 20;
+    private int page = 1;
+
+    private static final int size = 20;
 
     private String searchWord = "";
+    private boolean isEnd = false;
 
     private AddressSearchAdapter adapter = null;
 
@@ -51,15 +52,20 @@ public class AddressSearch extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if(actionId == EditorInfo.IME_ACTION_SEARCH){
-                    if(searchWord.equals("")){
-                        Toast.makeText(AddressSearch.this, "검색어를 입력해 주세요.", Toast.LENGTH_SHORT).show();
-                    }else if(searchWord.equals(v.getText().toString())){
-                        page++;
-                        searchToKakao(searchWord);
+                    searchWord = searchEdt.getText().toString();
+                    if(isEnd){
+                        Toast.makeText(AddressSearch.this, "마지막 페이지 입니다.", Toast.LENGTH_SHORT).show();
                     }else {
-                        searchWord = v.getText().toString();
-                        page = 1;
-                        searchToKakao(searchWord);
+                        if(searchWord.equals("")){
+                            Toast.makeText(AddressSearch.this, "검색어를 입력해 주세요.", Toast.LENGTH_SHORT).show();
+                        }else if(searchWord.equals(v.getText().toString())){
+                            page++;
+                            searchToKakao(searchWord);
+                        }else {
+                            searchWord = v.getText().toString();
+                            page = 1;
+                            searchToKakao(searchWord);
+                        }
                     }
                     return true;
                 }
@@ -70,7 +76,7 @@ public class AddressSearch extends AppCompatActivity {
 
     private Retrofit initHttp(){
         return new Retrofit.Builder()
-                .baseUrl("dapi.kakao.com")
+                .baseUrl("https://dapi.kakao.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
@@ -83,7 +89,7 @@ public class AddressSearch extends AppCompatActivity {
     }
 
     private void searchToKakao(String query){
-        kakaoAddressService.searchAddress(query, page, size).enqueue(new Callback<KaKaoAddressData>() {
+        kakaoAddressService.searchAddress(getString(R.string.kakao_rest_api_key), query, page, size).enqueue(new Callback<KaKaoAddressData>() {
             @Override
             public void onResponse(Call<KaKaoAddressData> call, Response<KaKaoAddressData> response) {
                 if(response.isSuccessful()){
@@ -95,7 +101,12 @@ public class AddressSearch extends AppCompatActivity {
                         }
                         assert adapter != null;
                         adapter.addList(data.getDocuments());
-                        page++;
+                        if(!data.getMeta().isEnd()){
+                            isEnd = false;
+                            page++;
+                        }else {
+                            isEnd = true;
+                        }
                     }else {
                         Log.e("카카오 주소찾기", "응답없음");
                     }

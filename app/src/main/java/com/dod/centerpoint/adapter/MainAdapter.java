@@ -19,7 +19,6 @@ public class MainAdapter extends RecyclerView.Adapter<MainHolder> {
 
     private final Context context;
     private final List<LocationData> list;
-    private MainHolder holder;
 
     public MainAdapter(Context context) {
         this.context = context;
@@ -52,13 +51,6 @@ public class MainAdapter extends RecyclerView.Adapter<MainHolder> {
     public void deleteList(int position){
         list.remove(position);
         notifyDataSetChanged();
-    }
-
-    public void clearList(boolean isDataChange){
-        list.clear();
-        if(isDataChange){
-            notifyDataSetChanged();
-        }
     }
 
     public List<LocationData> getList(){

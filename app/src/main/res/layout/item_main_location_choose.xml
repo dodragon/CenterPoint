@@ -29,29 +29,7 @@
                 android:textColor="@color/black"
                 android:text="경기도 성남시 수정구 고등로57"/>
 
-            <TextView
-                android:id="@+id/detail_address"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:textColor="@color/black"
-                android:text="어딘가에 어딘가"/>
-
         </LinearLayout>
-        <Button
-            android:id="@+id/research"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@color/main_color"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:layout_weight="1"
-            android:text="@string/research"/>
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:background="@color/line"/>
 
         <Button
             android:id="@+id/delete"
