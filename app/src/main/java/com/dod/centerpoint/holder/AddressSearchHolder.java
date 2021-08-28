@@ -31,7 +31,7 @@ public class AddressSearchHolder extends RecyclerView.ViewHolder {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, MainActivity.class);
-                intent.putExtra("addressData", setLocationData(data.getRoadAddress()));
+                intent.putExtra("addressData", setLocationData(data));
                 intent.putExtra("type", "address");
                 ((Activity)context).setResult(Activity.RESULT_OK, intent);
                 ((Activity)context).finish();
@@ -39,7 +39,7 @@ public class AddressSearchHolder extends RecyclerView.ViewHolder {
         });
     }
 
-    private LocationData setLocationData(KakaoRoadAddress data){
+    private LocationData setLocationData(KakaoAddressDoc data){
         LocationData locationData = new LocationData();
         locationData.setMainAddress(data.getAddressName());
         locationData.setLongitude(Double.parseDouble(data.getX()));

@@ -31,4 +31,13 @@ public class LocationData implements Serializable {
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
+
+    @Override
+    public String toString() {
+        return "LocationData{" +
+                "mainAddress='" + mainAddress + '\'' +
+                ", longitude=" + longitude +
+                ", latitude=" + latitude +
+                '}';
+    }
 }

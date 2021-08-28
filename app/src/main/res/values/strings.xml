@@ -2,13 +2,14 @@
     <string name="app_name">CenterPoint</string>
 
     <!-- Main -->
-    <string name="address_search">주소찾기</string>
-    <string name="map_search">지도찾기</string>
+    <string name="address_search">주소로 찾을랭</string>
+    <string name="map_search">지도로 찾을랭</string>
     <string name="research">수정하기</string>
     <string name="delete">삭제하기</string>
-    <string name="null_data">설정된 지역정보가 없습니다.</string>
-    <string name="find_point">찾기</string>
+    <string name="null_data">아직 설정된 위치가 없어요..!\n기준이 될 위치들을 2개 이상 설정해 주세요.</string>
+    <string name="find_point">Center 찾기 !</string>
 
     <!-- Key -->
+    <string name="kakao_app_key">a37f49798ce5901bf74708a91922a099</string>
     <string name="kakao_rest_api_key">KakaoAK bfb672176c47128ff62153b5917eb714</string>
 </resources>

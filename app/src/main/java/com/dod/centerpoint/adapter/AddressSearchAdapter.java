@@ -48,4 +48,8 @@ public class AddressSearchAdapter extends RecyclerView.Adapter<AddressSearchHold
         this.list.addAll(list);
         notifyDataSetChanged();
     }
+
+    public void clearList(){
+        list.clear();
+    }
 }

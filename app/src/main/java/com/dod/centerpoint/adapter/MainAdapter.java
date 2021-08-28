@@ -1,6 +1,7 @@
 package com.dod.centerpoint.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.dod.centerpoint.MainActivity;
 import com.dod.centerpoint.R;
 import com.dod.centerpoint.data.LocationData;
 import com.dod.centerpoint.holder.MainHolder;
@@ -51,6 +53,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainHolder> {
     public void deleteList(int position){
         list.remove(position);
         notifyDataSetChanged();
+        ((MainActivity)context).setListVisible(list.size());
     }
 
     public List<LocationData> getList(){
