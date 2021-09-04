@@ -56,7 +56,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainHolder> {
         ((MainActivity)context).setListVisible(list.size());
     }
 
-    public List<LocationData> getList(){
-        return list;
+    public ArrayList<LocationData> getList(){
+        return new ArrayList<>(list);
     }
 }

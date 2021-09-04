@@ -20,9 +20,12 @@ import android.widget.Toast;
 
 import com.dod.centerpoint.adapter.MainAdapter;
 import com.dod.centerpoint.data.LocationData;
+import com.dod.centerpoint.util.Distance;
+import com.dod.centerpoint.util.FindCenter;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.view.View.GONE;
@@ -52,7 +55,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void setOnClick(){
         int[] ids = new int[]{
                 R.id.address_search,
-                R.id.map_search
+                R.id.map_search,
+                R.id.find_center
         };
 
         for(int id : ids){
@@ -66,6 +70,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             resultLauncher.launch(new Intent(MainActivity.this, AddressSearch.class));
         }else if(v.getId() == R.id.map_search){
             resultLauncher.launch(new Intent(MainActivity.this, MapActivity.class));
+        }else if(v.getId() == R.id.find_center){
+
+
+            ArrayList<LocationData> pointList = adapter.getList();
+            if(pointList.size() <= 1){
+                Toast.makeText(this, "최소 2개 이상의 좌표가 있어야 해요 !", Toast.LENGTH_SHORT).show();
+            }else{
+                Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+                FindCenter findCenter = new FindCenter();
+                for(int i=0;i<pointList.size();i++){
+                    findCenter.addPoint((float)pointList.get(i).getLatitude(), (float)pointList.get(i).getLongitude());
+                }
+
+                LocationData center = findCenter.getCenter();
+
+                intent.putExtra("locationList", pointList);
+                intent.putExtra("center", center);
+                intent.putExtra("distance", new Distance(
+                        center.getLatitude(),
+                        center.getLongitude(),
+                        pointList.get(0).getLatitude(),
+                        pointList.get(0).getLongitude()
+                ).distance());
+                startActivity(intent);
+            }
         }
     }
 
