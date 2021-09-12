@@ -8,11 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,15 +16,11 @@ import android.widget.Toast;
 
 import com.dod.centerpoint.adapter.MainAdapter;
 import com.dod.centerpoint.data.LocationData;
+import com.dod.centerpoint.util.Centroid;
 import com.dod.centerpoint.util.Distance;
-import com.dod.centerpoint.util.FindCenter;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.view.View.GONE;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -71,28 +63,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else if(v.getId() == R.id.map_search){
             resultLauncher.launch(new Intent(MainActivity.this, MapActivity.class));
         }else if(v.getId() == R.id.find_center){
-
-
             ArrayList<LocationData> pointList = adapter.getList();
+            Log.e("로케이션 리스트", pointList.toString());
             if(pointList.size() <= 1){
                 Toast.makeText(this, "최소 2개 이상의 좌표가 있어야 해요 !", Toast.LENGTH_SHORT).show();
             }else{
                 Intent intent = new Intent(MainActivity.this, ResultActivity.class);
-                FindCenter findCenter = new FindCenter();
-                for(int i=0;i<pointList.size();i++){
-                    findCenter.addPoint((float)pointList.get(i).getLatitude(), (float)pointList.get(i).getLongitude());
-                }
+                LocationData center = new Centroid().getCenterPoint(pointList);
 
-                LocationData center = findCenter.getCenter();
+                Log.e("센터", center.toString());
 
                 intent.putExtra("locationList", pointList);
                 intent.putExtra("center", center);
-                intent.putExtra("distance", new Distance(
-                        center.getLatitude(),
-                        center.getLongitude(),
-                        pointList.get(0).getLatitude(),
-                        pointList.get(0).getLongitude()
-                ).distance());
                 startActivity(intent);
             }
         }

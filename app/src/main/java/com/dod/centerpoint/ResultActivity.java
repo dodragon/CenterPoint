@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dod.centerpoint.data.LocationData;
+import com.dod.centerpoint.util.Distance;
 import com.dod.centerpoint.util.dialog.Loading;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
@@ -35,6 +38,7 @@ public class ResultActivity extends AppCompatActivity implements View.OnClickLis
     private MapView mapView;
 
     private int centerPoiTag;
+    private String centerAddress = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,24 +55,20 @@ public class ResultActivity extends AppCompatActivity implements View.OnClickLis
         Intent getData = getIntent();
         setView(
                 (ArrayList<LocationData>)getData.getSerializableExtra("locationList"),
-                (LocationData)getData.getSerializableExtra("center"),
-                getData.getDoubleExtra("distance", 0.0)
+                (LocationData)getData.getSerializableExtra("center")
         );
     }
 
-    private void setView(ArrayList<LocationData> locationList, LocationData center, double distance){
-        Log.e("리스트들", locationList.toString());
-        Log.e("센터", center.toString());
-        Log.e("거리", String.valueOf(distance));
-
+    private void setView(ArrayList<LocationData> locationList, LocationData center){
         findViewById(R.id.back).setOnClickListener(this);
+        findViewById(R.id.center_address).setOnClickListener(this);
 
         centerPoiTag = locationList.size();
 
         mapView = new MapView(this);
         ((ViewGroup)findViewById(R.id.map_view)).addView(mapView);
 
-        setDistance(distance);
+        setDistance(locationList, center);
 
         for(int i=0;i<locationList.size();i++){
             LocationData data = locationList.get(i);
@@ -83,22 +83,41 @@ public class ResultActivity extends AppCompatActivity implements View.OnClickLis
             mapView.addPOIItem(poi);
         }
 
+        setCenterPoi(center);
         setLine(locationList, center);
         findAddress(center);
 
         loading.dismiss();
     }
 
+
+    private void setDistance(List<LocationData> list, LocationData center){
+        StringBuilder distanceTxt = new StringBuilder();
+        for(int i=0;i<list.size();i++){
+            distanceTxt
+                    .append("* ")
+                    .append(i + 1)
+                    .append("번(")
+                    .append(list.get(i).getMainAddress())
+                    .append("): ")
+                    .append(getDistanceTxt(new Distance(list.get(i).getLongitude(), list.get(i).getLatitude(), center.getLongitude(), center.getLatitude()).distance()));
+            if(i + 1 != list.size()){
+                distanceTxt.append("\n");
+            }
+        }
+
+        ((TextView)findViewById(R.id.distance)).setText(distanceTxt);
+    }
+
     @SuppressLint("DefaultLocale")
-    private void setDistance(double distance){
+    private String getDistanceTxt(double distance){
         String disTxt;
         if(distance >= 1000){
             disTxt = String.format("%.2f", distance / 1000) + "km";
         }else{
             disTxt = String.format("%.2f", distance) + "m";
         }
-
-        ((TextView)findViewById(R.id.distance)).setText(disTxt);
+        return disTxt;
     }
 
     private void checkPermission(){
@@ -125,14 +144,16 @@ public class ResultActivity extends AppCompatActivity implements View.OnClickLis
         new MapReverseGeoCoder(getString(R.string.kakao_app_key), mapPoint, new MapReverseGeoCoder.ReverseGeoCodingResultListener() {
             @Override
             public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String s) {
-                data.setMainAddress(s);
-                setCenterPoi(data);
+                centerAddress = s;
+                data.setMainAddress("센터 주소 : " + s + "(복사하기)");
+                ((TextView)findViewById(R.id.center_address)).setText(data.getMainAddress());
             }
 
             @Override
             public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder) {
-                data.setMainAddress("주소를 찾을 수 없지만.. 여기가 센터!");
-                setCenterPoi(data);
+                centerAddress = "";
+                data.setMainAddress("센터의 주소를 찾을 수 없어요ㅜㅜ");
+                ((TextView)findViewById(R.id.center_address)).setText(data.getMainAddress());
             }
         }, this).startFindingAddress();
     }
@@ -173,6 +194,18 @@ public class ResultActivity extends AppCompatActivity implements View.OnClickLis
             onBackPressed();
         }else if(v.getId() == R.id.share){
             //TODO: 공유하기
+        }else if(v.getId() == R.id.center_address){
+            if(((TextView)v).getText().toString().contains("복사하기") && !centerAddress.equals("")){
+                ClipboardManager manager = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("센터주소", centerAddress);
+                manager.setPrimaryClip(clip);
+                Toast.makeText(this, "주소를 복사했어요 !", Toast.LENGTH_SHORT).show();
+            }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 }
