@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1045791818361",
+    "project_id": "center-point-e3b9b",
+    "storage_bucket": "center-point-e3b9b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1045791818361:android:9419eb5f868b447254caa8",
+        "android_client_info": {
+          "package_name": "com.dod.centerpoint"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1045791818361-u94fuvkn1bb6hnlfutc36eqbgtk35245.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dod.centerpoint",
+            "certificate_hash": "104dca5ca8b7ad082548e14fa87aff8e88371666"
+          }
+        },
+        {
+          "client_id": "1045791818361-piurojd3cmhic6c4m4cl9pb3nt4fplqp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6tE7lP0oHQOzcGfjExMho1x6CdumUzOo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1045791818361-piurojd3cmhic6c4m4cl9pb3nt4fplqp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
