@@ -1,6 +1,10 @@
-plugins {
-    id 'com.android.application'
-}
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+
+// Keystore Security
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
     compileSdkVersion 30
@@ -18,10 +22,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('key/cenpo_key.jks')
-            storePassword "dodragon1!"
-            keyAlias "cenpo"
-            keyPassword "dodragon1!"
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
         }
     }
 
@@ -47,6 +51,9 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.6.2'
     implementation files('libs/libDaumMapAndroid.jar')
     implementation 'io.github.ParkSangGwon:tedpermission-normal:3.2.3'
+    implementation platform('com.google.firebase:firebase-bom:28.4.1')
+    implementation 'com.google.firebase:firebase-firestore'
+    implementation "com.kakao.sdk:v2-link:2.8.0"
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

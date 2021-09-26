@@ -4,13 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -21,6 +20,16 @@ import com.dod.centerpoint.util.Distance;
 import com.dod.centerpoint.util.dialog.Loading;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
+import com.kakao.sdk.common.KakaoSdk;
+import com.kakao.sdk.common.util.KakaoCustomTabsClient;
+import com.kakao.sdk.link.LinkClient;
+import com.kakao.sdk.link.WebSharerClient;
+import com.kakao.sdk.link.model.LinkResult;
+import com.kakao.sdk.template.model.Button;
+import com.kakao.sdk.template.model.Content;
+import com.kakao.sdk.template.model.FeedTemplate;
+import com.kakao.sdk.template.model.Link;
+import com.kakao.sdk.template.model.Social;
 
 import net.daum.mf.map.api.CameraUpdateFactory;
 import net.daum.mf.map.api.MapPOIItem;
@@ -30,7 +39,12 @@ import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
 
 public class ResultActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -44,6 +58,8 @@ public class ResultActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
+
+        KakaoSdk.init(this, "a37f49798ce5901bf74708a91922a099");
 
         checkPermission();
     }
@@ -62,6 +78,7 @@ public class ResultActivity extends AppCompatActivity implements View.OnClickLis
     private void setView(ArrayList<LocationData> locationList, LocationData center){
         findViewById(R.id.back).setOnClickListener(this);
         findViewById(R.id.center_address).setOnClickListener(this);
+        findViewById(R.id.share).setOnClickListener(this);
 
         centerPoiTag = locationList.size();
 
@@ -188,12 +205,59 @@ public class ResultActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
+    private void kakaoShare(){
+        Map<String, String> data = new HashMap<>();
+        data.put("docId", getIntent().getStringExtra("docId"));
+
+        Link link = new Link("https://play.google.com/store/apps/details?id=com.dod.centerpoint",
+                "https://play.google.com/store/apps/details?id=com.dod.centerpoint", data);
+
+        Content content = new Content("친구가 여기서 보쟤요!", "https://firebasestorage.googleapis.com/v0/b/center-point-e3b9b.appspot.com/o/KakaoTalk_20210926_174629057.png?alt=media&token=8add0f59-223b-441c-85f2-f901f485dc40",
+                link, "눌러서 확인하세요!");
+        Social social = new Social();
+        Button button = new Button("확인하기", link);
+
+        List<Button> btnList = new ArrayList<>();
+        btnList.add(button);
+
+
+        FeedTemplate template = new FeedTemplate(content, social, btnList);
+
+        if(LinkClient.getInstance().isKakaoLinkAvailable(this)){
+            LinkClient.getInstance().defaultTemplate(this, template, null, new Function2<LinkResult, Throwable, Unit>() {
+                @Override
+                public Unit invoke(LinkResult linkResult, Throwable throwable) {
+                    if(throwable != null){
+                        Toast.makeText(ResultActivity.this, "공유하기에 실패 했어요ㅜㅜ", Toast.LENGTH_SHORT).show();
+                    }else {
+                        startActivity(linkResult.getIntent());
+                    }
+                    return null;
+                }
+            });
+        }else {
+            Uri uri = WebSharerClient.getInstance().defaultTemplateUri(template);
+
+            try{
+                KakaoCustomTabsClient.INSTANCE.openWithDefault(this, uri);
+            }catch (UnsupportedOperationException e){
+                Toast.makeText(this, "공유 할 수 있는 브라우저가 없습니다ㅜㅜ", Toast.LENGTH_SHORT).show();
+            }
+
+            try{
+                KakaoCustomTabsClient.INSTANCE.open(this, uri);
+            }catch (ActivityNotFoundException e){
+                Toast.makeText(this, "공유 할 수 있는 브라우저가 없습니다ㅜㅜ", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.back){
             onBackPressed();
         }else if(v.getId() == R.id.share){
-            //TODO: 공유하기
+            kakaoShare();
         }else if(v.getId() == R.id.center_address){
             if(((TextView)v).getText().toString().contains("복사하기") && !centerAddress.equals("")){
                 ClipboardManager manager = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);

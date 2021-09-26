@@ -4,6 +4,8 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,10 +19,23 @@ import android.widget.Toast;
 import com.dod.centerpoint.adapter.MainAdapter;
 import com.dod.centerpoint.data.LocationData;
 import com.dod.centerpoint.util.Centroid;
-import com.dod.centerpoint.util.Distance;
+import com.dod.centerpoint.util.dialog.Loading;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -33,6 +48,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         initList();
+
+        if(getIntent().getData() != null){
+            Loading loading = new Loading(this);
+            loading.show();
+
+            String docId = getIntent().getData().toString().split("docId=")[1];
+
+            DocumentReference ref = FirebaseFirestore.getInstance().collection("location").document(docId);
+            ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful()){
+                        DocumentSnapshot snapshot = task.getResult();
+                        Map<String, Object> data = snapshot.getData();
+
+                        Gson gson = new Gson();
+                        for(int i=0;i<data.size();i++){
+                            adapter.addList(gson.fromJson(data.get(String.valueOf(i)).toString(), new TypeToken<LocationData>(){}.getType()));
+                        }
+
+                        loading.dismiss();
+                        findViewById(R.id.find_center).performClick();
+                    }else {
+                        Toast.makeText(MainActivity.this, "데이터를 읽어오는데 실패했네요 ㅈㅅ..", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
     }
 
     private void initList(){
@@ -63,19 +106,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else if(v.getId() == R.id.map_search){
             resultLauncher.launch(new Intent(MainActivity.this, MapActivity.class));
         }else if(v.getId() == R.id.find_center){
+            Loading loading = new Loading(this);
+            loading.show();
             ArrayList<LocationData> pointList = adapter.getList();
             Log.e("로케이션 리스트", pointList.toString());
             if(pointList.size() <= 1){
                 Toast.makeText(this, "최소 2개 이상의 좌표가 있어야 해요 !", Toast.LENGTH_SHORT).show();
+                loading.dismiss();
             }else{
                 Intent intent = new Intent(MainActivity.this, ResultActivity.class);
                 LocationData center = new Centroid().getCenterPoint(pointList);
 
-                Log.e("센터", center.toString());
+                Map<String, String> data = new HashMap<>();
+                for(int i=0;i<pointList.size();i++){
+                    data.put(String.valueOf(i), new Gson().toJson(pointList.get(i)));
+                }
 
-                intent.putExtra("locationList", pointList);
-                intent.putExtra("center", center);
-                startActivity(intent);
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection("location")
+                        .add(data)
+                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                            @Override
+                            public void onSuccess(DocumentReference documentReference) {
+                                intent.putExtra("docId", documentReference.getId());
+                                intent.putExtra("locationList", pointList);
+                                intent.putExtra("center", center);
+                                loading.dismiss();
+                                startActivity(intent);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(MainActivity.this, "다시 시도해 주세요 !", Toast.LENGTH_SHORT).show();
+                                loading.dismiss();
+                            }
+                        });
             }
         }
     }
